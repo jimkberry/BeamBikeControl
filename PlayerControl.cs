@@ -15,7 +15,7 @@ namespace BikeControl
 
         public void OnPlayerTurnRequest(TurnDir dir)
         {
-            be.OnTurnReq(ib.bikeId, dir);        
+            be.PostBikeTurn(ib, dir);        
         }
     }
 }

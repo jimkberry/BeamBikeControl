@@ -45,7 +45,7 @@ namespace BikeControl
                             if ( Vector2.Distance(pos2, closestBikePos) > kMaxBikeSeparation) // only if it's not really close
                             {
                                 closestBikeIsFarAway = true;
-                                be.OnTurnReq(ib.bikeId, BikeUtils.TurnTowardsPos( closestBikePos, pos2, heading ));                             
+                                be.PostBikeTurn(ib, BikeUtils.TurnTowardsPos( closestBikePos, pos2, heading ));                             
                             }
                         }
                             
@@ -53,7 +53,7 @@ namespace BikeControl
                         {
                             bool doTurn = ( Random.value * turnTime <  frameSecs );
                             if (doTurn)    
-                                be.OnTurnReq(ib.bikeId, (Random.value < .5f) ? TurnDir.kLeft : TurnDir.kRight);   
+                                be.PostBikeTurn(ib, (Random.value < .5f) ? TurnDir.kLeft : TurnDir.kRight);   
                         }               
                     }
 
@@ -68,7 +68,7 @@ namespace BikeControl
                     if (  pendingTurn == TurnDir.kUnset || dirScores[(int)pendingTurn].score < best.score) 
                     {
                         //Debug.Log(string.Format("New Turn: {0}", best.turnDir));                    
-                        be.OnTurnReq(ib.bikeId, best.turnDir);
+                        be.PostBikeTurn(ib, best.turnDir);
                     }
                 }   
         } 
