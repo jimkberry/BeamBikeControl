@@ -7,6 +7,7 @@ namespace BikeControl
     {
         void Setup(IBike beBike, IBeamBackend backend);   
         void Loop(float frameSecs);
+        void RequestTurn(TurnDir dir);     
     }
 
     public abstract class BikeControlBase : IBikeControl
@@ -35,7 +36,7 @@ namespace BikeControl
                 if (!bb.UpcomingGridPoint(Ground.gridSize).Equals(stashedTurn))
                 {
                     // Turn is requested, and the upcoming point is not what ti was when stashed
-                    bb.logger.Info("Bike {bb.bikeId} requesting deferred turn.");
+                    bb.logger.Info($"Bike {bb.name} Executing deferred turn.");
                     be.PostBikeTurn(bb, stashedTurn);
                     stashedTurn = TurnDir.kUnset;                    
                 }
@@ -49,13 +50,18 @@ namespace BikeControl
             // Current limit is 1 bike length
             Vector2 nextPt = bb.UpcomingGridPoint(Ground.gridSize);
             float dist = Vector2.Distance(bb.position, nextPt);
-            if (dist < BaseBike.length) 
+            if ((dist < BaseBike.length) || (dist > Ground.gridSize-BaseBike.length))
             {
+                bb.logger.Info($"Bike {bb.name} requesting deferred turn.");                
                 stashedPoint = nextPt;
                 stashedTurn = dir;
             }
             else
+            {
+                // cancel anything stashed (can this happen?)
+                stashedTurn = TurnDir.kUnset;                
                 be.PostBikeTurn(bb, dir); // this needs to move
+            }
 
         }
 

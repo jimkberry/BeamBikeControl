@@ -8,6 +8,11 @@ namespace BikeControl
         {
         }
 
+        public override void Loop(float frameSecs)
+        {
+            base.Loop(frameSecs);
+        }        
+
         public void OnPlayerTurnRequest(TurnDir dir)
         {
             RequestTurn(dir);       

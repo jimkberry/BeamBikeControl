@@ -27,6 +27,7 @@ namespace BikeControl
 
         public override void Loop(float frameSecs)
         {
+            base.Loop(frameSecs);
             Vector2 pos2 = bb.position;
             BeamGameData gd = ((BeamGameInstance)be).gameData;
             Ground g = gd.Ground;
