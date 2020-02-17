@@ -7,11 +7,7 @@ namespace BikeControl
         public override void SetupImpl() 
         {
             
-        }
-
-        public override void Loop(float frameSecs)
-        {
-        }  
+        } 
 
     }
 }

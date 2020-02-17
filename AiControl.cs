@@ -17,8 +17,8 @@ namespace BikeControl
         public float maxX = Ground.maxX - 10*Ground.gridSize; // assumes min === -max
         public float maxZ = Ground.maxZ - 10*Ground.gridSize;
 
-        public TurnDir pendingTurn { get => ib.pendingTurn; } // TODOL: Get rid of these? No?
-        public Heading heading { get => ib.heading; }    
+        public TurnDir pendingTurn { get => bb.pendingTurn; } // TODOL: Get rid of these? No?
+        public Heading heading { get => bb.heading; }    
 
         public override void SetupImpl() 
         {
@@ -27,7 +27,7 @@ namespace BikeControl
 
         public override void Loop(float frameSecs)
         {
-            Vector2 pos2 = ib.position;
+            Vector2 pos2 = bb.position;
             BeamGameData gd = ((BeamGameInstance)be).gameData;
             Ground g = gd.Ground;
 
@@ -38,14 +38,14 @@ namespace BikeControl
                     // If not gonna turn maybe go towards the closest bike?
                     if (pendingTurn == TurnDir.kUnset) {
                         bool closestBikeIsFarAway = false;
-                        IBike closestBike = gd.ClosestBike(ib);
+                        IBike closestBike = gd.ClosestBike(bb);
                         if (closestBike != null)
                         {
-                            Vector2 closestBikePos = gd.ClosestBike(ib).position;
+                            Vector2 closestBikePos = gd.ClosestBike(bb).position;
                             if ( Vector2.Distance(pos2, closestBikePos) > kMaxBikeSeparation) // only if it's not really close
                             {
                                 closestBikeIsFarAway = true;
-                                be.PostBikeTurn(ib, BikeUtils.TurnTowardsPos( closestBikePos, pos2, heading ));                             
+                               RequestTurn(BikeUtils.TurnTowardsPos( closestBikePos, pos2, heading ));                             
                             }
                         }
                             
@@ -53,14 +53,14 @@ namespace BikeControl
                         {
                             bool doTurn = ( Random.value * turnTime <  frameSecs );
                             if (doTurn)    
-                                be.PostBikeTurn(ib, (Random.value < .5f) ? TurnDir.kLeft : TurnDir.kRight);   
+                                RequestTurn((Random.value < .5f) ? TurnDir.kLeft : TurnDir.kRight);   
                         }               
                     }
 
                     // Do some looking ahead - maybe 
                     Vector2 nextPos = BikeUtils.UpcomingGridPoint(pos2, heading);
 
-                    List<Vector2> othersPos = gd.CloseBikePositions(ib, 2); // up to 2 closest
+                    List<Vector2> othersPos = gd.CloseBikePositions(bb, 2); // up to 2 closest
 
                     BikeUtils.MoveNode moveTree = BikeUtils.BuildMoveTree(g, nextPos, heading, 4, othersPos);
                     List<DirAndScore> dirScores = BikeUtils.TurnScores(moveTree);
@@ -68,7 +68,7 @@ namespace BikeControl
                     if (  pendingTurn == TurnDir.kUnset || dirScores[(int)pendingTurn].score < best.score) 
                     {
                         //Debug.Log(string.Format("New Turn: {0}", best.turnDir));                    
-                        be.PostBikeTurn(ib, best.turnDir);
+                        RequestTurn(best.turnDir);
                     }
                 }   
         } 
