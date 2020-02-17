@@ -32,9 +32,7 @@ namespace BikeControl
         {
             if (stashedTurn != TurnDir.kUnset)
             {
-                Vector2 nextPt = bb.UpcomingGridPoint(Ground.gridSize);
-                float dist = Vector2.Distance(bb.position, nextPt);
-                if (( dist >= BaseBike.length) && (dist <=  Ground.gridSize-BaseBike.length))
+                if (!bb.CloseToGridPoint())
                 {
                     // Turn is requested, and we are not close to a point
                     bb.logger.Info($"Bike {bb.name} Executing deferred turn.");
@@ -50,9 +48,7 @@ namespace BikeControl
             // otherwise send out a request.
             // Current limit is 1 bike length
             bool posted = false;
-            Vector2 nextPt = bb.UpcomingGridPoint(Ground.gridSize);
-            float dist = Vector2.Distance(bb.position, nextPt);
-            if (( dist < BaseBike.length) || (dist >  Ground.gridSize-BaseBike.length)) // too close to a grid point to turn
+            if (bb.CloseToGridPoint()) // too close to a grid point to turn
             {
                 if (allowDeferred)
                 {
