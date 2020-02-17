@@ -13,9 +13,5 @@ namespace BikeControl
             base.Loop(frameSecs);
         }        
 
-        public void OnPlayerTurnRequest(TurnDir dir)
-        {
-            RequestTurn(dir);       
-        }
     }
 }

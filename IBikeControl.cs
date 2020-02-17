@@ -7,7 +7,7 @@ namespace BikeControl
     {
         void Setup(IBike beBike, IBeamBackend backend);   
         void Loop(float frameSecs);
-        void RequestTurn(TurnDir dir);     
+        bool RequestTurn(TurnDir dir, bool allowDeferred = false);     
     }
 
     public abstract class BikeControlBase : IBikeControl
@@ -16,7 +16,7 @@ namespace BikeControl
         protected IBeamBackend be;
 
         protected Vector2 stashedPoint;
-        protected TurnDir stashedTurn; // if turn is requested too late then save it and apply it after the turn is done
+        protected TurnDir stashedTurn = TurnDir.kUnset; // if turn is requested too late then save it and apply it after the turn is done
 
         public BikeControlBase()  { }
 
@@ -43,26 +43,31 @@ namespace BikeControl
             }
         }
 
-        public virtual void RequestTurn(TurnDir dir)
+        public virtual bool RequestTurn(TurnDir dir, bool allowDeferred = false)
         {
             // If we are too close to the upcoming point to be able to turn then assign it to the next point,
             // otherwise send out a request.
             // Current limit is 1 bike length
+            bool posted = false;
             Vector2 nextPt = bb.UpcomingGridPoint(Ground.gridSize);
             float dist = Vector2.Distance(bb.position, nextPt);
-            if ((dist < BaseBike.length) || (dist > Ground.gridSize-BaseBike.length))
+            if ( dist < BaseBike.length)
             {
-                bb.logger.Info($"Bike {bb.name} requesting deferred turn.");                
-                stashedPoint = nextPt;
-                stashedTurn = dir;
+                if (allowDeferred)
+                {
+                    bb.logger.Info($"Bike {bb.name} requesting deferred turn.");                
+                    stashedPoint = nextPt;
+                    stashedTurn = dir;
+                }
             }
             else
             {
                 // cancel anything stashed (can this happen?)
                 stashedTurn = TurnDir.kUnset;                
                 be.PostBikeTurn(bb, dir); // this needs to move
+                posted = true;
             }
-
+            return posted;
         }
 
     }
