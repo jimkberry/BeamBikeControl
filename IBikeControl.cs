@@ -15,7 +15,6 @@ namespace BikeControl
         protected BaseBike bb;
         protected IBeamBackend be;
 
-        protected Vector2 stashedPoint;
         protected TurnDir stashedTurn = TurnDir.kUnset; // if turn is requested too late then save it and apply it after the turn is done
 
         public BikeControlBase()  { }
@@ -33,9 +32,11 @@ namespace BikeControl
         {
             if (stashedTurn != TurnDir.kUnset)
             {
-                if (!bb.UpcomingGridPoint(Ground.gridSize).Equals(stashedTurn))
+                Vector2 nextPt = bb.UpcomingGridPoint(Ground.gridSize);
+                float dist = Vector2.Distance(bb.position, nextPt);
+                if (( dist >= BaseBike.length) && (dist <=  Ground.gridSize-BaseBike.length))
                 {
-                    // Turn is requested, and the upcoming point is not what ti was when stashed
+                    // Turn is requested, and we are not close to a point
                     bb.logger.Info($"Bike {bb.name} Executing deferred turn.");
                     be.PostBikeTurn(bb, stashedTurn);
                     stashedTurn = TurnDir.kUnset;                    
@@ -51,12 +52,11 @@ namespace BikeControl
             bool posted = false;
             Vector2 nextPt = bb.UpcomingGridPoint(Ground.gridSize);
             float dist = Vector2.Distance(bb.position, nextPt);
-            if ( dist < BaseBike.length)
+            if (( dist < BaseBike.length) || (dist >  Ground.gridSize-BaseBike.length)) // too close to a grid point to turn
             {
                 if (allowDeferred)
                 {
                     bb.logger.Info($"Bike {bb.name} requesting deferred turn.");                
-                    stashedPoint = nextPt;
                     stashedTurn = dir;
                 }
             }
