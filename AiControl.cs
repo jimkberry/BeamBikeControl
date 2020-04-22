@@ -18,9 +18,9 @@ namespace BikeControl
         public float maxZ = Ground.maxZ - 10*Ground.gridSize;
 
         public TurnDir pendingTurn { get => bb.pendingTurn; } // TODOL: Get rid of these? No?
-        public Heading heading { get => bb.heading; }    
+        public Heading heading { get => bb.heading; }
 
-        public override void SetupImpl() 
+        public override void SetupImpl()
         {
 
         }
@@ -29,12 +29,12 @@ namespace BikeControl
         {
             base.Loop(frameSecs);
             Vector2 pos2 = bb.position;
-            BeamGameData gd = ((BeamGameInstance)be).gameData;
+            BeamGameData gd = ((BeamGameInstance)be).GameData;
             Ground g = gd.Ground;
 
                 secsSinceLastAiCheck += frameSecs;   // TODO: be consistent with time
-                if (secsSinceLastAiCheck > aiCheckTimeout) 
-                {         
+                if (secsSinceLastAiCheck > aiCheckTimeout)
+                {
                     secsSinceLastAiCheck = 0;
                     // If not gonna turn maybe go towards the closest bike?
                     if (pendingTurn == TurnDir.kUnset) {
@@ -46,33 +46,33 @@ namespace BikeControl
                             if ( Vector2.Distance(pos2, closestBikePos) > kMaxBikeSeparation) // only if it's not really close
                             {
                                 closestBikeIsFarAway = true;
-                               RequestTurn(BikeUtils.TurnTowardsPos( closestBikePos, pos2, heading ));                             
+                               RequestTurn(BikeUtils.TurnTowardsPos( closestBikePos, pos2, heading ));
                             }
                         }
-                            
+
                         if (!closestBikeIsFarAway) // Wow. This is some nasty conditional-nesting! TODO: Make it not suck.
                         {
                             bool doTurn = ( Random.value * turnTime <  frameSecs );
-                            if (doTurn)    
-                                RequestTurn((Random.value < .5f) ? TurnDir.kLeft : TurnDir.kRight);   
-                        }               
+                            if (doTurn)
+                                RequestTurn((Random.value < .5f) ? TurnDir.kLeft : TurnDir.kRight);
+                        }
                     }
 
-                    // Do some looking ahead - maybe 
+                    // Do some looking ahead - maybe
                     Vector2 nextPos = BikeUtils.UpcomingGridPoint(pos2, heading);
 
                     List<Vector2> othersPos = gd.CloseBikePositions(bb, 2); // up to 2 closest
 
                     BikeUtils.MoveNode moveTree = BikeUtils.BuildMoveTree(g, nextPos, heading, 4, othersPos);
                     List<DirAndScore> dirScores = BikeUtils.TurnScores(moveTree);
-                    DirAndScore best =  SelectGoodTurn(dirScores); 
-                    if (  pendingTurn == TurnDir.kUnset || dirScores[(int)pendingTurn].score < best.score) 
+                    DirAndScore best =  SelectGoodTurn(dirScores);
+                    if (  pendingTurn == TurnDir.kUnset || dirScores[(int)pendingTurn].score < best.score)
                     {
-                        //Debug.Log(string.Format("New Turn: {0}", best.turnDir));                    
+                        //Debug.Log(string.Format("New Turn: {0}", best.turnDir));
                         RequestTurn(best.turnDir);
                     }
-                }   
-        } 
+                }
+        }
 
 
         protected DirAndScore SelectGoodTurn(List<DirAndScore> dirScores) {
@@ -80,7 +80,7 @@ namespace BikeControl
             // If you only take the best score you will almost always just go forwards.
             // But never select a 1 if there is anything better
             // &&& jkb - I suspect this doesn;t do exactly what I think it does.
-            List<DirAndScore> turns = dirScores.Where( ds => (bestScore > 2) ? (ds.score > bestScore * .5) : (ds.score == bestScore)).ToList(); 
+            List<DirAndScore> turns = dirScores.Where( ds => (bestScore > 2) ? (ds.score > bestScore * .5) : (ds.score == bestScore)).ToList();
             int sel = (int)(Random.value * (float)turns.Count);
             //Debug.Log(string.Format("Possible: {0}, Sel Idx: {1}", turns.Count, sel));
             return turns[sel];
