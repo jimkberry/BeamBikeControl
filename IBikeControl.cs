@@ -5,21 +5,21 @@ namespace BikeControl
 {
     public interface IBikeControl
     {
-        void Setup(IBike beBike, IBeamBackend backend);   
+        void Setup(IBike beBike, IBeamGameInstance backend);
         void Loop(float frameSecs);
-        bool RequestTurn(TurnDir dir, bool allowDeferred = false);     
+        bool RequestTurn(TurnDir dir, bool allowDeferred = false);
     }
 
     public abstract class BikeControlBase : IBikeControl
     {
         protected BaseBike bb;
-        protected IBeamBackend be;
+        protected IBeamGameInstance be;
 
         protected TurnDir stashedTurn = TurnDir.kUnset; // if turn is requested too late then save it and apply it after the turn is done
 
         public BikeControlBase()  { }
 
-        public void Setup(IBike ibike, IBeamBackend backend)
+        public void Setup(IBike ibike, IBeamGameInstance backend)
         {
             bb = ibike as BaseBike;
             be = backend;
@@ -28,7 +28,7 @@ namespace BikeControl
 
         public abstract void SetupImpl(); // do any implmentation-specific setup
 
-        public virtual void Loop(float frameSecs) 
+        public virtual void Loop(float frameSecs)
         {
             if (stashedTurn != TurnDir.kUnset)
             {
@@ -37,7 +37,7 @@ namespace BikeControl
                     // Turn is requested, and we are not close to a point
                     bb.logger.Info($"Bike {bb.name} Executing deferred turn.");
                     be.PostBikeTurn(bb, stashedTurn);
-                    stashedTurn = TurnDir.kUnset;                    
+                    stashedTurn = TurnDir.kUnset;
                 }
             }
         }
@@ -52,14 +52,14 @@ namespace BikeControl
             {
                 if (allowDeferred)
                 {
-                    bb.logger.Info($"Bike {bb.name} requesting deferred turn.");                
+                    bb.logger.Info($"Bike {bb.name} requesting deferred turn.");
                     stashedTurn = dir;
                 }
             }
             else
             {
                 // cancel anything stashed (can this happen?)
-                stashedTurn = TurnDir.kUnset;                
+                stashedTurn = TurnDir.kUnset;
                 be.PostBikeTurn(bb, dir); // this needs to move
                 posted = true;
             }
