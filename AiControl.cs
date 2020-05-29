@@ -63,7 +63,7 @@ namespace BikeControl
 
                     List<Vector2> othersPos = gd.CloseBikePositions(bb, 2); // up to 2 closest
 
-                    BikeUtils.MoveNode moveTree = BikeUtils.BuildMoveTree(g, nextPos, heading, 4, othersPos);
+                    BikeUtils.MoveNode moveTree = BikeUtils.BuildMoveTree(gd, nextPos, heading, 4, othersPos);
                     List<DirAndScore> dirScores = BikeUtils.TurnScores(moveTree);
                     DirAndScore best =  SelectGoodTurn(dirScores);
                     if (  pendingTurn == TurnDir.kUnset || dirScores[(int)pendingTurn].score < best.score)
