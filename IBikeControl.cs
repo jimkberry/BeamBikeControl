@@ -39,7 +39,7 @@ namespace BikeControl
                 if (!bb.CloseToGridPoint())
                 {
                     // Turn is requested, and we are not close to a point
-                    Logger.Info($"{this.GetType().Name} Bike {bb.name} Executing deferred turn.");
+                    Logger.Verbose($"{this.GetType().Name} Bike {bb.name} Executing deferred turn.");
                     be.PostBikeTurn(bb, stashedTurn);
                     stashedTurn = TurnDir.kUnset;
                 }
@@ -56,7 +56,7 @@ namespace BikeControl
             {
                 if (allowDeferred)
                 {
-                    Logger.Info($"{this.GetType().Name} Bike {bb.name} requesting deferred turn.");
+                    Logger.Verbose($"{this.GetType().Name} Bike {bb.name} requesting deferred turn.");
                     stashedTurn = dir;
                 }
             }
@@ -64,8 +64,14 @@ namespace BikeControl
             {
                 // cancel anything stashed (can this happen?)
                 stashedTurn = TurnDir.kUnset;
-                be.PostBikeTurn(bb, dir); // this needs to move
-                posted = true;
+
+                if ((dir == bb.pendingTurn) ||  (dir == TurnDir.kStraight && bb.pendingTurn == TurnDir.kUnset))
+                    Logger.Verbose($"RequestTurn() ignoring do-nothing {dir}");
+                else
+                {
+                    be.PostBikeTurn(bb, dir); // this needs to move
+                    posted = true;
+                }
             }
             return posted;
         }

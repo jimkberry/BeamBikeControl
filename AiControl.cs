@@ -72,7 +72,7 @@ namespace BikeControl
                 DirAndScore best =  SelectGoodTurn(dirScores);
                 if (  pendingTurn == TurnDir.kUnset || dirScores[(int)pendingTurn].score < best.score)
                 {
-                    Logger.Info($"{this.GetType().Name} Bike {bb.name} New Turn: {best.turnDir}");
+                    Logger.Verbose($"{this.GetType().Name} Bike {bb.name} New Turn: {best.turnDir}");
                     RequestTurn(best.turnDir);
                 }
             }
