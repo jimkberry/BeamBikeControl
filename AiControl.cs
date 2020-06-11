@@ -29,49 +29,53 @@ namespace BikeControl
         {
             base.Loop(frameSecs);
             Vector2 pos2 = bb.position;
-            BeamGameData gd = ((BeamGameInstance)be).GameData;
+            BeamGameState gd = ((BeamGameInstance)be).GameData;
             Ground g = gd.Ground;
 
-                secsSinceLastAiCheck += frameSecs;   // TODO: be consistent with time
-                if (secsSinceLastAiCheck > aiCheckTimeout)
-                {
-                    secsSinceLastAiCheck = 0;
-                    // If not gonna turn maybe go towards the closest bike?
-                    if (pendingTurn == TurnDir.kUnset) {
-                        bool closestBikeIsFarAway = false;
-                        IBike closestBike = gd.ClosestBike(bb);
-                        if (closestBike != null)
+            secsSinceLastAiCheck += frameSecs;   // TODO: be consistent with time
+            if (secsSinceLastAiCheck > aiCheckTimeout)
+            {
+                secsSinceLastAiCheck = 0;
+                // If not gonna turn maybe go towards the closest bike?
+                if (pendingTurn == TurnDir.kUnset) {
+                    bool closestBikeIsFarAway = false;
+                    IBike closestBike = gd.ClosestBike(bb);
+                    if (closestBike != null)
+                    {
+                        Vector2 closestBikePos = gd.ClosestBike(bb).position;
+                        if ( Vector2.Distance(pos2, closestBikePos) > kMaxBikeSeparation) // only if it's not really close
                         {
-                            Vector2 closestBikePos = gd.ClosestBike(bb).position;
-                            if ( Vector2.Distance(pos2, closestBikePos) > kMaxBikeSeparation) // only if it's not really close
-                            {
-                                closestBikeIsFarAway = true;
-                               RequestTurn(BikeUtils.TurnTowardsPos( closestBikePos, pos2, heading ));
-                            }
-                        }
-
-                        if (!closestBikeIsFarAway) // Wow. This is some nasty conditional-nesting! TODO: Make it not suck.
-                        {
-                            bool doTurn = ( Random.value * turnTime <  frameSecs );
-                            if (doTurn)
-                                RequestTurn((Random.value < .5f) ? TurnDir.kLeft : TurnDir.kRight);
+                            closestBikeIsFarAway = true;
+                            RequestTurn(BikeUtils.TurnTowardsPos( closestBikePos, pos2, heading ));
+                            return;
                         }
                     }
 
-                    // Do some looking ahead - maybe
-                    Vector2 nextPos = BikeUtils.UpcomingGridPoint(pos2, heading);
-
-                    List<Vector2> othersPos = gd.CloseBikePositions(bb, 2); // up to 2 closest
-
-                    BikeUtils.MoveNode moveTree = BikeUtils.BuildMoveTree(gd, nextPos, heading, 4, othersPos);
-                    List<DirAndScore> dirScores = BikeUtils.TurnScores(moveTree);
-                    DirAndScore best =  SelectGoodTurn(dirScores);
-                    if (  pendingTurn == TurnDir.kUnset || dirScores[(int)pendingTurn].score < best.score)
+                    if (!closestBikeIsFarAway) // Wow. This is some nasty conditional-nesting! TODO: Make it not suck.
                     {
-                        //Debug.Log(string.Format("New Turn: {0}", best.turnDir));
-                        RequestTurn(best.turnDir);
+                        bool doTurn = ( Random.value * turnTime <  frameSecs );
+                        if (doTurn)
+                        {
+                            RequestTurn((Random.value < .5f) ? TurnDir.kLeft : TurnDir.kRight);
+                            return;
+                        }
                     }
                 }
+
+                // Do some looking ahead - maybe
+                Vector2 nextPos = BikeUtils.UpcomingGridPoint(pos2, heading);
+
+                List<Vector2> othersPos = gd.CloseBikePositions(bb, 2); // up to 2 closest
+
+                BikeUtils.MoveNode moveTree = BikeUtils.BuildMoveTree(gd, nextPos, heading, 4, othersPos);
+                List<DirAndScore> dirScores = BikeUtils.TurnScores(moveTree);
+                DirAndScore best =  SelectGoodTurn(dirScores);
+                if (  pendingTurn == TurnDir.kUnset || dirScores[(int)pendingTurn].score < best.score)
+                {
+                    Logger.Info($"{this.GetType().Name} Bike {bb.name} New Turn: {best.turnDir}");
+                    RequestTurn(best.turnDir);
+                }
+            }
         }
 
 

@@ -1,5 +1,5 @@
 ﻿using BeamBackend;
-using UnityEngine;
+using UniLog;
 
 namespace BikeControl
 {
@@ -14,10 +14,14 @@ namespace BikeControl
     {
         protected BaseBike bb;
         protected IBeamGameInstance be;
-
         protected TurnDir stashedTurn = TurnDir.kUnset; // if turn is requested too late then save it and apply it after the turn is done
 
-        public BikeControlBase()  { }
+        public UniLogger Logger;
+
+        public BikeControlBase()
+        {
+            Logger = UniLogger.GetLogger("BikeCtrl");
+        }
 
         public void Setup(IBike ibike, IBeamGameInstance backend)
         {
@@ -35,7 +39,7 @@ namespace BikeControl
                 if (!bb.CloseToGridPoint())
                 {
                     // Turn is requested, and we are not close to a point
-                    bb.logger.Info($"Bike {bb.name} Executing deferred turn.");
+                    Logger.Info($"{this.GetType().Name} Bike {bb.name} Executing deferred turn.");
                     be.PostBikeTurn(bb, stashedTurn);
                     stashedTurn = TurnDir.kUnset;
                 }
@@ -52,7 +56,7 @@ namespace BikeControl
             {
                 if (allowDeferred)
                 {
-                    bb.logger.Info($"Bike {bb.name} requesting deferred turn.");
+                    Logger.Info($"{this.GetType().Name} Bike {bb.name} requesting deferred turn.");
                     stashedTurn = dir;
                 }
             }
