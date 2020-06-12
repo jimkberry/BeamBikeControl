@@ -78,7 +78,6 @@ namespace BikeControl
             }
         }
 
-
         protected DirAndScore SelectGoodTurn(List<DirAndScore> dirScores) {
             int bestScore = dirScores.OrderBy( ds => ds.score).Last().score;
             // If you only take the best score you will almost always just go forwards.
