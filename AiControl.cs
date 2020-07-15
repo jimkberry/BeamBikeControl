@@ -29,7 +29,7 @@ namespace BikeControl
         {
             base.Loop(frameSecs);
             Vector2 pos2 = bb.position;
-            BeamGameState gd = ((BeamGameInstance)be).GameData;
+            BeamCoreState gd = ((BeamGameInstance)be).GameData;
             Ground g = gd.Ground;
 
             secsSinceLastAiCheck += frameSecs;   // TODO: be consistent with time
