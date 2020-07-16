@@ -5,7 +5,7 @@ namespace BikeControl
 {
     public interface IBikeControl
     {
-        void Setup(IBike beBike, IBeamGameInstance backend);
+        void Setup(IBike beBike, IBeamAppCore appCore);
         void Loop(float frameSecs);
         bool RequestTurn(TurnDir dir, bool allowDeferred = false);
     }
@@ -13,7 +13,7 @@ namespace BikeControl
     public abstract class BikeControlBase : IBikeControl
     {
         protected BaseBike bb;
-        protected IBeamGameInstance be;
+        protected IBeamAppCore be;
         protected TurnDir stashedTurn = TurnDir.kUnset; // if turn is requested too late then save it and apply it after the turn is done
 
         public UniLogger Logger;
@@ -23,7 +23,7 @@ namespace BikeControl
             Logger = UniLogger.GetLogger("BikeCtrl");
         }
 
-        public void Setup(IBike ibike, IBeamGameInstance backend)
+        public void Setup(IBike ibike, IBeamAppCore backend)
         {
             bb = ibike as BaseBike;
             be = backend;
