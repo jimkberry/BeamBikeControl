@@ -13,7 +13,7 @@ namespace BikeControl
     public abstract class BikeControlBase : IBikeControl
     {
         protected BaseBike bb;
-        protected IBeamAppCore be;
+        protected IBeamAppCore appCore;
         protected TurnDir stashedTurn = TurnDir.kUnset; // if turn is requested too late then save it and apply it after the turn is done
 
         public UniLogger Logger;
@@ -26,7 +26,7 @@ namespace BikeControl
         public void Setup(IBike ibike, IBeamAppCore backend)
         {
             bb = ibike as BaseBike;
-            be = backend;
+            appCore = backend;
             SetupImpl();
         }
 
@@ -40,7 +40,7 @@ namespace BikeControl
                 {
                     // Turn is requested, and we are not close to a point
                     Logger.Verbose($"{this.GetType().Name} Bike {bb.name} Executing deferred turn.");
-                    be.PostBikeTurn(bb, stashedTurn);
+                    appCore.PostBikeTurn(bb, stashedTurn);
                     stashedTurn = TurnDir.kUnset;
                 }
             }
@@ -69,7 +69,7 @@ namespace BikeControl
                     Logger.Verbose($"RequestTurn() ignoring do-nothing {dir}");
                 else
                 {
-                    be.PostBikeTurn(bb, dir); // this needs to move
+                    appCore.PostBikeTurn(bb, dir); // this needs to move
                     posted = true;
                 }
             }
