@@ -25,12 +25,13 @@ namespace BikeControl
 
         }
 
-        public override void Loop(float frameSecs)
+        public override void Loop(long curTime, int frameMs)
         {
-            base.Loop(frameSecs);
-            Vector2 pos2 = bb.position;
+            base.Loop(curTime, frameMs);
+            Vector2 pos2 = bb.Position(curTime);
             BeamCoreState gd = ((BeamAppCore)appCore).CoreData;
             Ground g = gd.Ground;
+            float frameSecs = frameMs * .001f;
 
             secsSinceLastAiCheck += frameSecs;   // TODO: be consistent with time
             if (secsSinceLastAiCheck > aiCheckTimeout)
@@ -39,10 +40,10 @@ namespace BikeControl
                 // If not gonna turn maybe go towards the closest bike?
                 if (pendingTurn == TurnDir.kUnset) {
                     bool closestBikeIsFarAway = false;
-                    IBike closestBike = gd.ClosestBike(bb);
+                    IBike closestBike = gd.ClosestBike(curTime, bb);
                     if (closestBike != null)
                     {
-                        Vector2 closestBikePos = gd.ClosestBike(bb).position;
+                        Vector2 closestBikePos = gd.ClosestBike(curTime, bb).Position(curTime);
                         if ( Vector2.Distance(pos2, closestBikePos) > kMaxBikeSeparation) // only if it's not really close
                         {
                             closestBikeIsFarAway = true;
@@ -65,7 +66,7 @@ namespace BikeControl
                 // Do some looking ahead - maybe
                 Vector2 nextPos = BikeUtils.UpcomingGridPoint(pos2, heading);
 
-                List<Vector2> othersPos = gd.CloseBikePositions(bb, 2); // up to 2 closest
+                List<Vector2> othersPos = gd.CloseBikePositions(curTime, bb, 2); // up to 2 closest
 
                 BikeUtils.MoveNode moveTree = BikeUtils.BuildMoveTree(gd, nextPos, heading, 4, othersPos);
                 List<DirAndScore> dirScores = BikeUtils.TurnScores(moveTree);

@@ -4,14 +4,14 @@ namespace BikeControl
 {
     public class PlayerControl : BikeControlBase
     {
-        public override void SetupImpl() 
+        public override void SetupImpl()
         {
         }
 
-        public override void Loop(float frameSecs)
+        public override void Loop(long curTime, int frameMs)
         {
-            base.Loop(frameSecs);
-        }        
+            base.Loop(curTime, frameMs);
+        }
 
     }
 }

@@ -1,4 +1,5 @@
 ﻿using BeamBackend;
+using UnityEngine;
 using UniLog;
 
 namespace BikeControl
@@ -6,13 +7,14 @@ namespace BikeControl
     public interface IBikeControl
     {
         void Setup(IBike beBike, IBeamAppCore appCore);
-        void Loop(float frameSecs);
+        void Loop(long curTime, int frameMs);
         bool RequestTurn(TurnDir dir, bool allowDeferred = false);
     }
 
     public abstract class BikeControlBase : IBikeControl
     {
         protected BaseBike bb;
+        protected Vector2 framePos;
         protected IBeamAppCore appCore;
         protected TurnDir stashedTurn = TurnDir.kUnset; // if turn is requested too late then save it and apply it after the turn is done
 
@@ -32,14 +34,15 @@ namespace BikeControl
 
         public abstract void SetupImpl(); // do any implmentation-specific setup
 
-        public virtual void Loop(float frameSecs)
+        public virtual void Loop(long curTime, int frameMs)
         {
+            framePos = bb.Position(curTime);
             if (stashedTurn != TurnDir.kUnset)
             {
-                if (!bb.CloseToGridPoint())
+                if (!bb.CloseToGridPoint(framePos))
                 {
                     // Turn is requested, and we are not close to a point
-                    Logger.Verbose($"{this.GetType().Name} Bike {bb.name} Executing deferred turn.");
+                    Logger.Verbose($"{this.GetType().Name} Bike {bb.name} Executing turn.");
                     appCore.PostBikeTurn(bb, stashedTurn);
                     stashedTurn = TurnDir.kUnset;
                 }
@@ -52,7 +55,7 @@ namespace BikeControl
             // otherwise send out a request.
             // Current limit is 1 bike length
             bool posted = false;
-            if (bb.CloseToGridPoint()) // too close to a grid point to turn
+            if (bb.CloseToGridPoint(bb.Position(appCore.CurrentRunningGameTime))) // too close to a grid point to turn
             {
                 if (allowDeferred)
                 {
