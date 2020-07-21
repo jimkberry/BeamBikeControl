@@ -68,7 +68,7 @@ namespace BikeControl
                 // cancel anything stashed (can this happen?)
                 stashedTurn = TurnDir.kUnset;
 
-                if ((dir == bb.pendingTurn) ||  (dir == TurnDir.kStraight && bb.pendingTurn == TurnDir.kUnset))
+                if ((dir == bb.basePendingTurn) ||  (dir == TurnDir.kStraight && bb.basePendingTurn == TurnDir.kUnset))
                     Logger.Verbose($"RequestTurn() ignoring do-nothing {dir}");
                 else
                 {
