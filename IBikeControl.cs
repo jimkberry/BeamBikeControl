@@ -14,7 +14,7 @@ namespace BikeControl
     public abstract class BikeControlBase : IBikeControl
     {
         protected BaseBike bb;
-        protected Vector2 framePos;
+        protected BikeDynState bbDynState;
         protected IBeamAppCore appCore;
         protected TurnDir stashedTurn = TurnDir.kUnset; // if turn is requested too late then save it and apply it after the turn is done
 
@@ -36,10 +36,10 @@ namespace BikeControl
 
         public virtual void Loop(long curTime, int frameMs)
         {
-            framePos = bb.Position(curTime);
+            bbDynState = bb.DynamicState(curTime);
             if (stashedTurn != TurnDir.kUnset)
             {
-                if (!bb.CloseToGridPoint(framePos))
+                if (!bb.CloseToGridPoint(bbDynState.position))
                 {
                     // Turn is requested, and we are not close to a point
                     Logger.Verbose($"{this.GetType().Name} Bike {bb.name} Executing turn.");
@@ -55,7 +55,7 @@ namespace BikeControl
             // otherwise send out a request.
             // Current limit is 1 bike length
             bool posted = false;
-            if (bb.CloseToGridPoint(bb.Position(appCore.CurrentRunningGameTime))) // too close to a grid point to turn
+            if (bb.CloseToGridPoint(bb.DynamicState(appCore.CurrentRunningGameTime).position)) // too close to a grid point to turn
             {
                 if (allowDeferred)
                 {

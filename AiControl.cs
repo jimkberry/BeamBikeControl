@@ -28,7 +28,6 @@ namespace BikeControl
         public override void Loop(long curTime, int frameMs)
         {
             base.Loop(curTime, frameMs);
-            Vector2 pos2 = bb.Position(curTime);
             BeamCoreState gd = ((BeamAppCore)appCore).CoreData;
             Ground g = gd.Ground;
             float frameSecs = frameMs * .001f;
@@ -43,11 +42,11 @@ namespace BikeControl
                     IBike closestBike = gd.ClosestBike(curTime, bb);
                     if (closestBike != null)
                     {
-                        Vector2 closestBikePos = gd.ClosestBike(curTime, bb).Position(curTime);
-                        if ( Vector2.Distance(pos2, closestBikePos) > kMaxBikeSeparation) // only if it's not really close
+                        Vector2 closestBikePos = gd.ClosestBike(curTime, bb).DynamicState(curTime).position;
+                        if ( Vector2.Distance(bbDynState.position, closestBikePos) > kMaxBikeSeparation) // only if it's not really close
                         {
                             closestBikeIsFarAway = true;
-                            RequestTurn(BikeUtils.TurnTowardsPos( closestBikePos, pos2, heading ));
+                            RequestTurn(BikeUtils.TurnTowardsPos( closestBikePos, bbDynState.position, heading ));
                             return;
                         }
                     }
@@ -64,7 +63,7 @@ namespace BikeControl
                 }
 
                 // Do some looking ahead - maybe
-                Vector2 nextPos = BikeUtils.UpcomingGridPoint(pos2, heading);
+                Vector2 nextPos = BikeUtils.UpcomingGridPoint(bbDynState.position, heading);
 
                 List<Vector2> othersPos = gd.CloseBikePositions(curTime, bb, 2); // up to 2 closest
 
